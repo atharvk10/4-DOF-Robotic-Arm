@@ -12,7 +12,7 @@ void setup() {
   setupStepper();
   setupBreakBeam();
   initServos();
-  updateServos();
+  //updateServos();
 
   delay(2000);
 
@@ -22,41 +22,41 @@ void setup() {
 
 void loop() {
 
-  objectDetected = checkObject();
+    updateServos();
 
-  if(objectDetected) {
-    Serial.println("Object Detected!");
-    delay(2000);
+  // objectDetected = checkObject();
 
-    //---- GRABBING OBJECT ----
-    rotate(0.25, "CW"); //Rotate towards the cube
-    delay(500);
-    moveTo(10, 5); //Need to figure out the x and y position to pick up the object
-    delay(1000);
-    grabObject(); //Grab object
-    Serial.println("Object Picked Up!");
+  // if(objectDetected) {
+  //   Serial.println("Object Detected!");
+  //   delay(2000);
 
-    // ---- NEUTRAL POSITION BEFORE DROPPING
-    delay(1000);
-    moveTo(10, 5); //Need to figure out the x and y position to hold the cube in between the two places
-    delay(500);
-    rotate(0.25, "CCW");
+  //   // //---- GRABBING OBJECT ----
+  //   // rotate(0.25, "CW"); //Rotate towards the cube
+  //   // delay(500);
+  //   // moveTo(10, 5); //Need to figure out the x and y position to pick up the object
+  //   // delay(1000);
+  //   // grabObject(); //Grab object
+  //   // Serial.println("Object Picked Up!");
 
-    // -- DROPPING OBJECT
-    delay(1000);
-    rotate(0.25, "CCW");
-    delay(500);
-    moveTo(10, 5);
-    delay(500);
-    dropObject();
+  //   // // ---- NEUTRAL POSITION BEFORE DROPPING
+  //   // delay(1000);
+  //   // moveTo(10, 5); //Need to figure out the x and y position to hold the cube in between the two places
+  //   // delay(500);
+  //   // rotate(0.25, "CCW");
 
-    Serial.println("Object Dropped!");
+  //   // // -- DROPPING OBJECT
+  //   // delay(1000);
+  //   // rotate(0.25, "CCW");
+  //   // delay(500);
+  //   // moveTo(10, 5);
+  //   // delay(500);
+  //   // dropObject();
 
-    objectDetected = false;
+  //   // Serial.println("Object Dropped!");
 
-  }
+  //   // objectDetected = false;
 
-  updateServos();
+  // }
 
   
 

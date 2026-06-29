@@ -7,7 +7,7 @@ void setupBreakBeam() {
   pinMode(sensorPin, INPUT_PULLUP);
   lastState = digitalRead(sensorPin);
   
-  Serial.println("Started");
+  Serial.println("Break Beam Setup! ✅ ");
 
 }
 

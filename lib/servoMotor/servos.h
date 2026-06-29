@@ -23,9 +23,6 @@
 //Intializes all of the servos
 void initServos();
 
-//Defines initial positions upon bootup
-void initialPositions();
-
 //Updates the servo movement and performs the movement
 void updateServos();
 

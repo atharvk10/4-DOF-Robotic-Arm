@@ -20,7 +20,7 @@ void setupStepper() {
   stepper.setCurrentPosition(0);
   stepper.moveTo(0);
 
-  Serial.println("Stepper Setup ✅");
+  Serial.println("Stepper Motor Setup ✅");
 }
 
 void rotate(double percentage, String dir) {

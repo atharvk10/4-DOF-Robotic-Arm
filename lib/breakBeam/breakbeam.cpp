@@ -1,28 +1,37 @@
 #include "breakbeam.h"
 
-int lastState;
+// 1 = beam clear, 0 = object present
+int lastState = 1;
 
-void setupBreakBeam() {
+void setupBreakBeam()
+{
+    pinMode(sensorPin, INPUT);
+    lastState = digitalRead(sensorPin);
 
-  pinMode(sensorPin, INPUT_PULLUP);
-  lastState = digitalRead(sensorPin);
-  
-  Serial.println("Break Beam Setup! ✅ ");
-
+    Serial.println("Break Beam Setup! ✅");
 }
 
-boolean checkObject() {
-  int currentState = digitalRead(sensorPin);
+bool checkObject()
+{
+    int currentState = digitalRead(sensorPin);
 
-  if (currentState != lastState) {
-    if (currentState == LOW) {
-      Serial.println("Object Detected!");
-      return true;
-    } else {
-      Serial.println("Object Cleared!");
-      return false;
+    bool detected = false;
+
+    // ONLY trigger on transition HIGH → LOW
+    if (lastState == 1 && currentState == 0)
+    {
+        //Serial.println("Object Detected!");
+        detected = true;
     }
-    lastState = currentState;
-  }
 
+    // ONLY trigger on transition LOW → HIGH
+    else if (lastState == 0 && currentState == 1)
+    {
+     //   Serial.println("Object Cleared!");
+    }
+
+    // ALWAYS update last state
+    lastState = currentState;
+
+    return detected;
 }

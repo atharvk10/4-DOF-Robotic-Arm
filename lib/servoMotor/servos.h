@@ -17,9 +17,6 @@
 #define shoulderOffset 10
 #define degreeAddition 30
 
-#define motorTimeTravel 2000
-
-
 //Intializes all of the servos
 void initServos();
 
@@ -27,13 +24,18 @@ void initServos();
 void updateServos();
 
 //Moves the shoulder to an angle
-void moveShoulder(int angleGoal);
+void moveShoulder(int angleGoal, int motorTravelTime);
 
 //Moves the forearm to an angle
-void moveForearm(int angleGoal);
+void moveForearm(int angleGoal, int motorTravelTime);
 
 //Opens the claw to an angke (0 degree means closed, 180 degrees means open)
-void moveClaw(int angleGoal);
+void moveClaw(int angleGoal, int motorTravelTime);
+
+//Animates the closing and opening of the claw
+void animateClaw(int numOfTimes);
+
+boolean doneMoving();
 
 //Grabs the object
 void grabObject();

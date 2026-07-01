@@ -6,11 +6,11 @@ rampInt shoulderRamp;
 rampInt forearmRamp;
 rampInt clawRamp;
 
-const int leftShoulderInitial = 135;
+//Initial Homing Poisition
+const int leftShoulderInitial = 90;
 const int rightShoulderInitial = 180 - leftShoulderInitial + shoulderOffset;
-
-const int forearmInitial = 30;
-const int clawInitial = 45;
+const int forearmInitial = 90;
+const int clawInitial = 0;
 
 
 void initServos()
@@ -22,19 +22,17 @@ void initServos()
     claw.attach(clawPin);
 
     // Move servos to a known physical position
+    
     leftBase.write(leftShoulderInitial);
     rightBase.write(rightShoulderInitial);
     forearm.write(180 - forearmInitial);
     claw.write(clawInitial);
-
-    delay(500);
 
     // Synchronize Ramp with the actual servo positions
     shoulderRamp.go(leftShoulderInitial, 0);
     forearmRamp.go(180 - forearmInitial, 0);
     clawRamp.go(clawInitial, 0);
 
-    Serial.println("Servo Setup and Home ✅");
 }
 
 void updateServos()
@@ -48,49 +46,74 @@ void updateServos()
     claw.write(clawRamp.update());
 }
 
-void moveShoulder(int angleGoal)
+void moveShoulder(int angleGoal, int motorTravelTime)
 {
-    shoulderRamp.go(angleGoal, motorTimeTravel);
+    shoulderRamp.go(180 - angleGoal, motorTravelTime);
 }
 
-void moveForearm(int angleGoal)
+void moveForearm(int angleGoal, int motorTravelTime)
 {
-    forearmRamp.go(angleGoal, motorTimeTravel);
+    forearmRamp.go(180 - angleGoal, motorTravelTime);
 }
 
-void moveClaw(int angleGoal)
+void moveClaw(int angleGoal, int motorTravelTime)
 {
-    clawRamp.go(angleGoal, motorTimeTravel);
+    clawRamp.go(angleGoal, motorTravelTime);
+}
+
+void animateClaw(int numOfTimes) {
+
+    for(int i = 0; i < numOfTimes; i++) {
+        for(int j = 0; j < 170; j++) {
+            claw.write(j);
+            delay(5);
+        }
+
+        delay(500);
+
+        for(int k = 170; k > 0; k--) {
+            claw.write(k);
+            delay(5);
+        }
+    }
+
+//    claw.write(0);
+    
+}
+
+boolean doneMoving() {
+
+    return !shoulderRamp.isFinished() || !forearmRamp.isFinished() || !clawRamp.isFinished();
 }
 
 void grabObject()
 {
     Serial.println("Grabbing object!");
 
-    moveClaw(45);
+    moveClaw(45, 2000);
     while (!clawRamp.isFinished())
         updateServos();
 
-    moveClaw(90);
+    moveClaw(90, 500);
     while (!clawRamp.isFinished())
         updateServos();
 
-    moveClaw(180);
+    moveClaw(165, 500);
     while (!clawRamp.isFinished())
         updateServos();
 }
 
 void dropObject()
 {
-    moveClaw(0);
+    moveClaw(0, 1000);
     while (!clawRamp.isFinished())
         updateServos();
 
-    moveClaw(90);
+    moveClaw(90, 1000);
     while (!clawRamp.isFinished())
         updateServos();
 
-    moveClaw(180);
+    moveClaw(180, 1000);
     while (!clawRamp.isFinished())
         updateServos();
 }
@@ -130,6 +153,6 @@ void moveTo(double Xd, double Yd)
     Serial.print("Forearm: ");
     Serial.println(forearmDeg);
 
-    moveShoulder((int)shoulderDeg);
-    moveForearm((int)forearmDeg);
+  //  moveShoulder((int)shoulderDeg);
+   // moveForearm((int)forearmDeg);
 }

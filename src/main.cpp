@@ -4,6 +4,24 @@
 #include "../lib/breakBeam/breakbeam.h"
 
 boolean objectDetected = false;
+boolean homedRobot = false;
+
+//Updated Homing Positions
+const int leftShoulderFinal = 90;
+const int rightShoulderFinal = 180 - leftShoulderFinal + shoulderOffset;
+const int forearmFinal = 30;
+const int clawFinal = 135;
+
+//State Machine Variables
+
+enum RobotState {
+  HOME,
+  WAITING, 
+  PICKING_UP,
+  RETURNING_HOME,
+  ROTATING
+};
+
 
 void setup() {
 
@@ -12,51 +30,62 @@ void setup() {
   setupStepper();
   setupBreakBeam();
   initServos();
-  //updateServos();
 
-  delay(2000);
-
-  Serial.println("\nFull Setup Complete! ✅");
+  delay(3000);
 
 }
 
 void loop() {
 
-    updateServos();
+  updateServos();
 
-  // objectDetected = checkObject();
+  if (!homedRobot) {
+      moveShoulder(leftShoulderFinal, 1000);
+      moveForearm(forearmFinal, 1000);
+      moveClaw(clawFinal, 1000);
+      homedRobot = true;
 
-  // if(objectDetected) {
-  //   Serial.println("Object Detected!");
-  //   delay(2000);
+      Serial.println("Servo Setup and Home ✅");
+      Serial.println("\nFull Setup Complete! ✅");
 
-  //   // //---- GRABBING OBJECT ----
-  //   // rotate(0.25, "CW"); //Rotate towards the cube
-  //   // delay(500);
-  //   // moveTo(10, 5); //Need to figure out the x and y position to pick up the object
-  //   // delay(1000);
-  //   // grabObject(); //Grab object
-  //   // Serial.println("Object Picked Up!");
+  }
 
-  //   // // ---- NEUTRAL POSITION BEFORE DROPPING
-  //   // delay(1000);
-  //   // moveTo(10, 5); //Need to figure out the x and y position to hold the cube in between the two places
-  //   // delay(500);
-  //   // rotate(0.25, "CCW");
+  if(doneMoving()) return;
 
-  //   // // -- DROPPING OBJECT
-  //   // delay(1000);
-  //   // rotate(0.25, "CCW");
-  //   // delay(500);
-  //   // moveTo(10, 5);
-  //   // delay(500);
-  //   // dropObject();
+  objectDetected = checkObject();
 
-  //   // Serial.println("Object Dropped!");
+  if(objectDetected) {
+    
+    Serial.println("Object Detected!");
+    delay(1000);
 
-  //   // objectDetected = false;
+    //---- GRABBING OBJECT ----
+    //rotate(0.25, "CW"); //Rotate towards the cube
+    moveShoulder(32, 1500);
+    moveForearm(0, 1500);    
+    grabObject(); //Grab object
+    Serial.println("Object Picked Up!");
 
-  // }
+    // ---- NEUTRAL POSITION BEFORE DROPPING
+    delay(1000);
+    moveShoulder(90, 1000);
+    moveForearm(30, 1000);    // delay(1000);
+    //if(doneMoving()) rotate(0.5, "CW");
+
+
+
+    // // -- DROPPING OBJECT
+    // rotate(0.25, "CCW");
+    // delay(500);
+    // moveShoulder(32, 1500);
+    // moveForearm(0, 1500);    
+    // dropObject();
+
+    // Serial.println("Object Dropped!");
+
+    objectDetected = false;
+
+  }
 
   
 

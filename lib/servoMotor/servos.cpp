@@ -33,6 +33,8 @@ void initServos()
     forearmRamp.go(180 - forearmInitial, 0);
     clawRamp.go(clawInitial, 0);
 
+    Serial.println("Servo Setup ✅");
+
 }
 
 void updateServos()
@@ -81,14 +83,18 @@ void animateClaw(int numOfTimes) {
     
 }
 
-boolean doneMoving() {
+boolean armDoneMoving() {
 
-    return !shoulderRamp.isFinished() || !forearmRamp.isFinished() || !clawRamp.isFinished();
+    return !shoulderRamp.isFinished() || !forearmRamp.isFinished();
 }
 
-void grabObject()
+boolean clawDoneMoving() {
+    
+    return !clawRamp.isFinished();
+}
+
+void grabCube()
 {
-    Serial.println("Grabbing object!");
 
     moveClaw(45, 2000);
     while (!clawRamp.isFinished())
@@ -103,9 +109,9 @@ void grabObject()
         updateServos();
 }
 
-void dropObject()
+void dropCube()
 {
-    moveClaw(0, 1000);
+    moveClaw(165, 1000);
     while (!clawRamp.isFinished())
         updateServos();
 
@@ -113,7 +119,7 @@ void dropObject()
     while (!clawRamp.isFinished())
         updateServos();
 
-    moveClaw(180, 1000);
+    moveClaw(45, 1000);
     while (!clawRamp.isFinished())
         updateServos();
 }

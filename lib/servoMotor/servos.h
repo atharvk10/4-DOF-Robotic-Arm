@@ -35,13 +35,18 @@ void moveClaw(int angleGoal, int motorTravelTime);
 //Animates the closing and opening of the claw
 void animateClaw(int numOfTimes);
 
-boolean doneMoving();
+boolean armDoneMoving();
+
+boolean clawDoneMoving();
+
+//
+void disableServos();
 
 //Grabs the object
-void grabObject();
+void grabCube();
 
 //Drops the object
-void dropObject();
+void dropCube();
 
 //Implements IK algorithm to move the end effector to a XYZ position in space.
 void moveTo(double Xd, double Yd);

@@ -23,23 +23,31 @@ void setupStepper() {
   Serial.println("Stepper Motor Setup ✅");
 }
 
-void rotate(double percentage, String dir) {
+void rotate(double percentage, String dir)
+{
+    stepper.enableOutputs();
 
-  stepper.enableOutputs();
-  int target = (int)(percentage * stepsPerRevolution);
+    long target = (long)(percentage * stepsPerRevolution);
 
-  if(dir.equalsIgnoreCase("CCW")) {
-    target = -target;
-  } 
+    if (dir.equalsIgnoreCase("CCW"))
+        target = -target;
 
-  stepper.move(target);
+    stepper.move(target);   // Start moving only
+}
 
-  while(stepper.distanceToGo() != 0) {
-     stepper.run();
-  }
+void updateStepper()
+{
+    if (stepper.distanceToGo() != 0)
+    {
+        stepper.run();
+    }
+    else
+    {
+        stepper.disableOutputs();
+    }
+}
 
-  stepper.stop();
-  stepper.disableOutputs();
-
-  
+boolean stepperDone()
+{
+    return stepper.distanceToGo() == 0;
 }

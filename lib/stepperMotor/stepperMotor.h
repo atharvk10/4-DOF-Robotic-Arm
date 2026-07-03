@@ -13,16 +13,20 @@
 
 //Stepper motor settings
 #define stepRes 16
-#define gearRatio 2.75
+#define gearRatio 2.5
 #define stepsPerRevolution 200 * stepRes * gearRatio
-#define maxSpeed 1000
-#define accelVal 1000
+#define maxSpeed 2000
+#define accelVal 2000
 
 //Setting the stepper motor
 void setupStepper();
 
 //Percentage is % of full revolution we want to rotate, dir is either "CCW" or "CW"
 void rotate(double percentage, String dir);
+
+void updateStepper();
+
+boolean stepperDone();
 
 
 

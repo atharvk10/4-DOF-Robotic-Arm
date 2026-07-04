@@ -26,8 +26,10 @@ const int shoulderPlacePos = 45;
 const int forearmPlacePos = 0;
 
 //Constants for stepper motor movement
-const double rotateTo = 0.125;
-const double rotateBack = 0.25;
+const double rotateToCube = 0.125;
+const double rotateToBox = 0.25;
+const double rotateToHome = 0.125;
+const double rotateToMiddle = 0.125;
 
 //Constants for servo movement
 const int servoTime = 750;
@@ -35,6 +37,7 @@ const int timeElapsed = 1000;
 const int settleTime = 1000;
 
 long randNum;
+long currentRandValue;
 int upperLimit = 51;
 
 //State Machine Variables
@@ -44,7 +47,7 @@ enum RobotState {
   ROTATE_TO_CUBE,
   MOVING_TO_CUBE,
   GRABBING_CUBE,
-  MOVING_TO_CENTRAL,
+  MOVING_TO_NEUTRAL,
   ROTATING_TO_BOX,
   DROPPING_CUBE,
   MOVING_TO_BOX,
@@ -74,7 +77,7 @@ void loop() {
   updateServos();
   updateStepper();
 
-  randNum = random(randNum);
+  randNum = random(upperLimit);
 
   switch(ROBOSTATE) {
 
@@ -112,7 +115,7 @@ void loop() {
     case ROTATE_TO_CUBE: //ROTATING TOWARDS THE CUBE
 
       if (!stateEntered) {
-        rotate(rotateTo, "CW");
+        rotate(rotateToCube, "CW");
         stateEntered = true;
       }
 
@@ -146,15 +149,15 @@ void loop() {
       if(millis() - startTime > timeElapsed) {
         grabCube(); 
         Serial.println("\n4. GRABBING CUBE");
-        ROBOSTATE = MOVING_TO_CENTRAL;
+        ROBOSTATE = MOVING_TO_NEUTRAL;
       }
 
       break;
 
-    case MOVING_TO_CENTRAL: //MOVING TO THE CENTRAL POSITION
+    case MOVING_TO_NEUTRAL: //MOVING TO THE CENTRAL POSITION
 
       if(!stateEntered) {
-        Serial.println("\n5. MOVING TO CENTRAL POSITION");
+        Serial.println("\n5. MOVING TO NEUTRAL POSITION");
         moveShoulder(leftShoulderFinal, servoTime);
         moveForearm(forearmFinal, servoTime);
         stateEntered = true;
@@ -175,14 +178,17 @@ void loop() {
       }
 
       if (!rotationStarted && millis() - startTime >= timeElapsed) {
-        rotate(rotateBack, "CCW");
+        if(randNum % 2 == 0) rotate(rotateToBox, "CCW"); //Rotate to the box
+        else rotate(rotateToMiddle, "CCW"); //Rotate to the middle box
+
+        currentRandValue = randNum;
         rotationStarted = true;
       }
 
       if (rotationStarted && stepperDone()) {
-          rotationStarted = false;
-          stateEntered = false;
-          ROBOSTATE = MOVING_TO_BOX;
+        rotationStarted = false;
+        stateEntered = false;
+        ROBOSTATE = MOVING_TO_BOX;
       }
 
       break;
@@ -210,7 +216,8 @@ void loop() {
       if(millis() - startTime > timeElapsed) {
         Serial.println("\n8. DROPPING CUBE IN BOX");
         dropCube(); 
-        ROBOSTATE = ROTATING_TO_HOME;
+        if(currentRandValue % 2 == 0) ROBOSTATE = ROTATING_TO_HOME;
+        else ROBOSTATE = HOME;
       }
 
       break;
@@ -219,7 +226,7 @@ void loop() {
       
       if(!stateEntered) {
         Serial.println("\n9. RETURNING HOME");
-        rotate(rotateTo, "CW");
+        rotate(rotateToHome, "CW");
 
         stateEntered = true;
       } 

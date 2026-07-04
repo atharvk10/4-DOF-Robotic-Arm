@@ -26,13 +26,16 @@ const int shoulderPlacePos = 45;
 const int forearmPlacePos = 0;
 
 //Constants for stepper motor movement
-const double rotateTo = 0.25;
-const double rotateBack = 0.5;
+const double rotateTo = 0.125;
+const double rotateBack = 0.25;
 
 //Constants for servo movement
-const int servoTime = 1000;
-const int timeElapsed = 2000;
+const int servoTime = 750;
+const int timeElapsed = 1000;
 const int settleTime = 1000;
+
+long randNum;
+int upperLimit = 51;
 
 //State Machine Variables
 enum RobotState {
@@ -62,12 +65,16 @@ void setup() {
 
   delay(settleTime);
 
+  randomSeed(analogRead(A0));
+
 }
 
 void loop() {
 
   updateServos();
   updateStepper();
+
+  randNum = random(randNum);
 
   switch(ROBOSTATE) {
 
@@ -96,7 +103,7 @@ void loop() {
       objectDetected = checkCube();
 
       if(objectDetected) {
-        animateClaw(2);
+        animateClaw(1);
         ROBOSTATE = ROTATE_TO_CUBE;
       }
 
@@ -167,7 +174,7 @@ void loop() {
         stateEntered = true;
       }
 
-      if (!rotationStarted && millis() - startTime >= timeElapsed/2) {
+      if (!rotationStarted && millis() - startTime >= timeElapsed) {
         rotate(rotateBack, "CCW");
         rotationStarted = true;
       }
@@ -184,8 +191,8 @@ void loop() {
       
       if(!stateEntered) {
         Serial.println("\n7. MOVING ARM TO BOX");
-        moveShoulder(45, servoTime);
-        moveForearm(0, servoTime);
+        moveShoulder(shoulderPlacePos, servoTime);
+        moveForearm(forearmGrabPos, servoTime);
 
         stateEntered = true;
       }

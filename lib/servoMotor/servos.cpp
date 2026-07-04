@@ -71,10 +71,8 @@ void moveClaw(int angleGoal, int motorTravelTime)
 
 void animateClaw(int numOfTimes) {
 
-    claw.write(25);
-
-    for(int i = 25; i < numOfTimes; i++) {
-        for(int j = 0; j < 170; j++) {
+    for(int i = 0; i < numOfTimes; i++) {
+        for(int j = 25; j < 170; j++) {
             claw.write(j);
             delay(5);
         }

@@ -1,17 +1,21 @@
+/**
+ * @author Atharv Koratkar
+ * @date July 2026
+ */
+
 #include "servos.h"
 
+//Declaring servo and ramp objects
 Servo leftBase, rightBase, forearm, claw;
-
 rampInt shoulderRamp;
 rampInt forearmRamp;
 rampInt clawRamp;
 
-//Initial Homing Poisition
+//Initial positions upon startup
 const int leftShoulderInitial = 90;
 const int rightShoulderInitial = 180 - leftShoulderInitial + shoulderOffset;
 const int forearmInitial = 90;
-const int clawInitial = 0;
-
+const int clawInitial = 25;
 
 void initServos()
 {
@@ -22,7 +26,6 @@ void initServos()
     claw.attach(clawPin);
 
     // Move servos to a known physical position
-    
     leftBase.write(leftShoulderInitial);
     rightBase.write(rightShoulderInitial);
     forearm.write(180 - forearmInitial);
@@ -50,36 +53,37 @@ void updateServos()
 
 void moveShoulder(int angleGoal, int motorTravelTime)
 {
+    angleGoal = constrain(angleGoal, lowAngleLimit, highAngleLimit);
     shoulderRamp.go(180 - angleGoal, motorTravelTime);
 }
 
 void moveForearm(int angleGoal, int motorTravelTime)
 {
+    angleGoal = constrain(angleGoal, lowAngleLimit, highAngleLimit);
     forearmRamp.go(180 - angleGoal, motorTravelTime);
 }
 
 void moveClaw(int angleGoal, int motorTravelTime)
 {
+    angleGoal = constrain(angleGoal, lowAngleLimit, highAngleLimit);
     clawRamp.go(angleGoal, motorTravelTime);
 }
 
 void animateClaw(int numOfTimes) {
 
-    for(int i = 0; i < numOfTimes; i++) {
+    claw.write(25);
+
+    for(int i = 25; i < numOfTimes; i++) {
         for(int j = 0; j < 170; j++) {
             claw.write(j);
             delay(5);
         }
 
-        delay(500);
-
-        for(int k = 170; k > 0; k--) {
+        for(int k = 170; k > 25; k--) {
             claw.write(k);
             delay(5);
         }
     }
-
-//    claw.write(0);
     
 }
 
@@ -96,7 +100,7 @@ boolean clawDoneMoving() {
 void grabCube()
 {
 
-    moveClaw(45, 2000);
+    moveClaw(25, 500);
     while (!clawRamp.isFinished())
         updateServos();
 
@@ -111,17 +115,14 @@ void grabCube()
 
 void dropCube()
 {
-    moveClaw(165, 1000);
+    moveClaw(165, 500);
     while (!clawRamp.isFinished())
         updateServos();
 
-    moveClaw(90, 1000);
+    moveClaw(90, 500);
     while (!clawRamp.isFinished())
         updateServos();
-
-    moveClaw(45, 1000);
-    while (!clawRamp.isFinished())
-        updateServos();
+        
 }
 
 void moveTo(double Xd, double Yd)

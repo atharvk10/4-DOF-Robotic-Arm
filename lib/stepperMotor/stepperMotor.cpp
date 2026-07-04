@@ -1,3 +1,8 @@
+/**
+ * @author Atharv Koratkar
+ * @date July 2026
+ */
+
 #include "stepperMotor.h"
 
 AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);

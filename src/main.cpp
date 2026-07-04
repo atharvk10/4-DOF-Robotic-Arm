@@ -1,3 +1,8 @@
+/**
+ * @author Atharv Koratkar
+ * @date July 2026
+ */
+
 #include <Arduino.h>
 #include "../lib/servoMotor/servos.h"
 #include "../lib/stepperMotor/stepperMotor.h"
@@ -6,22 +11,28 @@
 boolean objectDetected = false;
 boolean homedRobot = false;
 
-//Updated Homing Positions
+//Final homing positions
 const int leftShoulderFinal = 90;
 const int rightShoulderFinal = 180 - leftShoulderFinal + shoulderOffset;
 const int forearmFinal = 30;
-const int clawFinal = 90;
+const int clawFinal = 25;
 
 //Positions for grabbing the cube
 const int shoulderGrabPos = 32;
 const int forearmGrabPos = 0;
 
+//Positions for placing the cube
+const int shoulderPlacePos = 45;
+const int forearmPlacePos = 0;
+
 //Constants for stepper motor movement
 const double rotateTo = 0.25;
 const double rotateBack = 0.5;
 
-
-
+//Constants for servo movement
+const int servoTime = 1000;
+const int timeElapsed = 2000;
+const int settleTime = 1000;
 
 //State Machine Variables
 enum RobotState {
@@ -39,6 +50,7 @@ enum RobotState {
 
 RobotState ROBOSTATE = HOME;
 boolean stateEntered = false;
+boolean rotationStarted = false;
 long startTime = millis();
 
 void setup() {
@@ -48,7 +60,7 @@ void setup() {
   setupBreakBeam();
   initServos();
 
-  delay(1000);
+  delay(settleTime);
 
 }
 
@@ -62,11 +74,13 @@ void loop() {
     case HOME: //MOVING TO THE HOME POSITION 
 
       if(!stateEntered) {
-        moveShoulder(leftShoulderFinal, 1000);
-        moveForearm(forearmFinal, 1000);
-        moveClaw(clawFinal, 1000);
+        moveShoulder(leftShoulderFinal, servoTime);
+        moveForearm(forearmFinal, servoTime);
+        moveClaw(clawFinal, servoTime);
 
+        Serial.println("----------------------");
         Serial.println("\n1. ROBOT HOMED");
+        Serial.println("\n2. WAITING FOR CUBE");
         stateEntered = true;
       }
 
@@ -79,20 +93,23 @@ void loop() {
     
     case WAITING: //CHECKING IF A CUBE IS DETECTED
       
-      objectDetected = checkObject();
-      if(objectDetected) ROBOSTATE = ROTATE_TO_CUBE;
+      objectDetected = checkCube();
+
+      if(objectDetected) {
+        animateClaw(2);
+        ROBOSTATE = ROTATE_TO_CUBE;
+      }
+
       break;
 
     case ROTATE_TO_CUBE: //ROTATING TOWARDS THE CUBE
 
-      if (!stateEntered)
-      {
+      if (!stateEntered) {
         rotate(rotateTo, "CW");
         stateEntered = true;
       }
 
-      if (stepperDone())
-      {
+      if (stepperDone()) {
         stateEntered = false;
         ROBOSTATE = MOVING_TO_CUBE;
       }
@@ -103,8 +120,8 @@ void loop() {
 
       if(!stateEntered) {
         Serial.println("\n3. MOVING TO CUBE");
-        moveShoulder(shoulderGrabPos, 1000);
-        moveForearm(forearmGrabPos, 1000); 
+        moveShoulder(shoulderGrabPos, servoTime);
+        moveForearm(forearmGrabPos, servoTime); 
 
         stateEntered = true;
       } 
@@ -119,19 +136,20 @@ void loop() {
 
     case GRABBING_CUBE: //GRABBING CUBE
 
-      if(millis() - startTime > 2000) {
-        Serial.println("\n4. GRABBING CUBE");
+      if(millis() - startTime > timeElapsed) {
         grabCube(); 
+        Serial.println("\n4. GRABBING CUBE");
         ROBOSTATE = MOVING_TO_CENTRAL;
       }
+
       break;
 
-    case MOVING_TO_CENTRAL:
+    case MOVING_TO_CENTRAL: //MOVING TO THE CENTRAL POSITION
 
       if(!stateEntered) {
         Serial.println("\n5. MOVING TO CENTRAL POSITION");
-        moveShoulder(90, 1500);
-        moveForearm(30, 1500);
+        moveShoulder(leftShoulderFinal, servoTime);
+        moveForearm(forearmFinal, servoTime);
         stateEntered = true;
       }
       
@@ -142,30 +160,32 @@ void loop() {
 
       break;
         
-    case ROTATING_TO_BOX:
-      
-      if (!stateEntered)
-      {
-        Serial.println("\n6. ROTATING TO BOX");
-        rotate(rotateBack, "CCW");
-        delay(500);
+    case ROTATING_TO_BOX: //ROTATING TO THE BOX TO PLACE CUBE
+
+      if (!stateEntered) {
+        startTime = millis();
         stateEntered = true;
       }
 
-      if (stepperDone())
-      {
-        stateEntered = false;
-        ROBOSTATE = MOVING_TO_BOX;
+      if (!rotationStarted && millis() - startTime >= timeElapsed/2) {
+        rotate(rotateBack, "CCW");
+        rotationStarted = true;
       }
-    
+
+      if (rotationStarted && stepperDone()) {
+          rotationStarted = false;
+          stateEntered = false;
+          ROBOSTATE = MOVING_TO_BOX;
+      }
+
       break;
     
-    case MOVING_TO_BOX:
+    case MOVING_TO_BOX: //MOVING ARM TO PLACE CUBE
       
       if(!stateEntered) {
         Serial.println("\n7. MOVING ARM TO BOX");
-        moveShoulder(45, 1500);
-        moveForearm(0, 1500);
+        moveShoulder(45, servoTime);
+        moveForearm(0, servoTime);
 
         stateEntered = true;
       }
@@ -178,21 +198,21 @@ void loop() {
 
       break;
 
-    case DROPPING_CUBE:
+    case DROPPING_CUBE: //DROPPING THE CUBE IN THE BOX
 
+      if(millis() - startTime > timeElapsed) {
         Serial.println("\n8. DROPPING CUBE IN BOX");
-        if(millis() - startTime > 2000) {
-          dropCube(); 
-          ROBOSTATE = ROTATING_TO_HOME;
-        }
+        dropCube(); 
+        ROBOSTATE = ROTATING_TO_HOME;
+      }
 
       break;
     
-    case ROTATING_TO_HOME:
+    case ROTATING_TO_HOME: //ROTATING TOWARDS THE HOME POSITION
       
       if(!stateEntered) {
         Serial.println("\n9. RETURNING HOME");
-        rotate(0.25, "CW");
+        rotate(rotateTo, "CW");
 
         stateEntered = true;
       } 

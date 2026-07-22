@@ -63,7 +63,7 @@ void moveForearm(int angleGoal, int motorTravelTime);
  */
 void moveClaw(int angleGoal, int motorTravelTime);
 
-/**
+/** 
  * @brief Animates the claw by repeatedly opening and closing it.
  * @details Used to demonstrate or test the claw's operation.
  * @param numOfTimes Number of times the claw should open and close.

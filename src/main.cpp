@@ -27,8 +27,8 @@ const int forearmPlacePos = 0;
 
 //Constants for stepper motor movement
 const double rotateToCube = 0.125;
-const double rotateToBox = 0.25;
-const double rotateToHome = 0.125;
+const double rotateToBox = 0.375;
+const double rotateToHome = 0.25;
 const double rotateToMiddle = 0.125;
 
 //Constants for servo movement
